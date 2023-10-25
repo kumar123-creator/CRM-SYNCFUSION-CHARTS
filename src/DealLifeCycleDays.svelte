@@ -149,7 +149,8 @@ data.sort((a, b) => {
 		},
 		tooltip: {
        enable: true, 
-      format: '${point.x}: ${point.y}' },
+       shared: true,
+       format: '${series.name}: ${point.y}' },
 		width: '100%',
 		height: '300px'
 	  });
