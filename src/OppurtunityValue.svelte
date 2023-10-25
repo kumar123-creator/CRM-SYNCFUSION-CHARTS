@@ -152,7 +152,7 @@
             })),
             tooltip: {
         enable: true,
-        format: '${point.x}: ${point.y}',
+        format: '${point.x}: GBP ${point.y}',
       },
             legendSettings: { enableHighlight: true },
         });
