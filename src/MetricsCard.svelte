@@ -8,6 +8,8 @@
    let data = null; 
    let startDate = "";
    let endDate = "";
+   let previousStartDate = '';
+  let previousEndDate = '';
 
    function getDatesFromLocalStorage() {
   const storedStartDate = localStorage.getItem('startDate');
@@ -16,7 +18,8 @@
   if (storedStartDate && storedEndDate) {
     startDate = storedStartDate;
     endDate = storedEndDate;
-    fetchData(startDate, endDate); // Fetch data when dates are loaded from local storage
+    // Fetch data when dates are loaded from local storage
+
   }
 }
 
@@ -24,7 +27,13 @@
     dateStore.subscribe((value) => {
   startDate = value.startDate;
   endDate = value.endDate;
-  fetchData(startDate, endDate); // Fetch data whenever the date changes
+    // Check if the dates have changed before making an API call
+    if (startDate !== previousStartDate || endDate !== previousEndDate) {
+      fetchData(startDate, endDate);
+      // Store the dates in local storage for future use
+      localStorage.setItem('startDate', startDate);
+      localStorage.setItem('endDate', endDate);
+    }
 });
 
 
@@ -51,7 +60,7 @@ console.log(data);
     });
   
     afterUpdate(() => {
-    
+   
       localStorage.setItem('startDate', startDate);
       localStorage.setItem('endDate', endDate);
     });
@@ -92,13 +101,6 @@ console.log(data);
 {/if}
 </main>
 <style>
- .chart-card {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin: 10px; /* Add margin to create space between the charts */
-  }
 
 	main {
 	  display: flex;
