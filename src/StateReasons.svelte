@@ -8,11 +8,12 @@ import Card from './MetricsCard.svelte';
 import { format, parse, compareAsc } from 'date-fns';
 
 export let appData;
-const API_BASE_URL = 'https://api.recruitly.io/api/dashboard/sales';
-  const API_KEY = 'TEST45684CB2A93F41FC40869DC739BD4D126D77';
 
+let chartDataStateReasons = [];
   let startDate = '';
   let endDate = '';
+  let previousStartDate = '';
+  let previousEndDate = '';
 
   // Function to check if local storage has date information
   function getDatesFromLocalStorage() {
@@ -27,14 +28,25 @@ const API_BASE_URL = 'https://api.recruitly.io/api/dashboard/sales';
 
   // Subscribe to the dateStore
   dateStore.subscribe((value) => {
+    previousStartDate = startDate; // Store the previous start date
+    previousEndDate = endDate; // Store the previous end date
     startDate = value.startDate;
     endDate = value.endDate;
-    fetchOpportunityStateReasonsChartData(startDate, endDate); // Fetch data whenever the date changes
+   // Fetch data whenever the date changes
+       // Check if the dates have changed before making an API call
+       if (startDate !== previousStartDate || endDate !== previousEndDate) {
+        fetchOpportunityStateReasonsChartData(startDate, endDate); 
+      // Store the dates in local storage for future use
+      localStorage.setItem('startDate', startDate);
+      localStorage.setItem('endDate', endDate);
+    }
   });
+
+
 
   onMount(() => {
     getDatesFromLocalStorage(); // Try to get dates from local storage
-    fetchOpportunityStateReasonsChartData(startDate, endDate); // Fetch data on component mount
+   // Fetch data on component mount
   });
 
   afterUpdate(() => {
@@ -53,6 +65,15 @@ async function fetchOpportunityStateReasonsChartData(startDate, endDate) {
     x: item.stateReason,
     y: item.count
   }));
+
+  // Check if chartDataStateReasons is empty
+  if (chartDataStateReasons.length === 0) {
+      const noDataContainer = document.getElementById('chart-no-data');
+      noDataContainer.style.display = 'block';
+    } else {
+      const noDataContainer = document.getElementById('chart-no-data');
+      noDataContainer.style.display = 'none';
+
   console.log(chartDataStateReasons);
   const chartStateReasons = new Chart({
     primaryXAxis: {
@@ -81,79 +102,37 @@ async function fetchOpportunityStateReasonsChartData(startDate, endDate) {
 
   chartStateReasons.appendTo('#chart-container-state-reasons');
 };
+}
 </script>
 
+<div class="chart-card">
+  <h2>Opportunity State Reasons</h2>
+  <div id='chart-no-data'>No data found.</div>
+  <div id='chart-container-state-reasons'></div>
+</div>
+
 <style>
+    #chart-no-data {
+    text-align: center;
+    display: none;
+    font-weight: bold;
+    font-size: 16px;
+    color: gray;
+  }
+
   h2 {
     font-weight: bold;
     font-size: large;
+    margin-left: 20px;
+    margin-top: 20px;
   }
-  .chart-card:last-child {
-    margin: 0;
-    padding: 0;
-  }
-
-  .center-container {
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    margin-top: 60px;
-    position: absolute;
-    top: 0;
-    right: 0;
-  }
-
+  
   .chart-card {
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 16px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  main {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 100px;
-  }
-
-  .card {
-    flex: 1;
-    max-width: 300px;
-    margin: 5px;
-  }
-
-  /* Tooltip container style */
-  .tooltip {
-    position: relative;
-    display: inline-block;
-  }
-
-  .tooltiptext {
-    visibility: hidden;
-    width: 200px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 4px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Position the tooltip above the card */
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
+    margin: 0px; /* Add margin to create space between the charts */
+    margin-top: 20px;
   }
 </style>
-
-<div class="chart-card">
-  <h2>Opportunity State Reasons</h2>
-  <div id='chart-container-state-reasons'></div>
-</div>
-
